@@ -1,11 +1,26 @@
 const nodemailer = require('nodemailer');
 
+// Log email config status (without revealing credentials)
+console.log('Email Service Config:', {
+    EMAIL_USER: process.env.EMAIL_USER ? `${process.env.EMAIL_USER.substring(0, 3)}***` : 'NOT SET',
+    EMAIL_PASS: process.env.EMAIL_PASS ? '***SET***' : 'NOT SET'
+});
+
 // Create Gmail transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    }
+});
+
+// Verify transporter on startup
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('Email transporter verification failed:', error.message);
+    } else {
+        console.log('Email transporter is ready to send emails');
     }
 });
 
