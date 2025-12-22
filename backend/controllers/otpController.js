@@ -32,7 +32,11 @@ const sendOTP = async (req, res) => {
         const result = await sendOTPEmail(email, otp);
 
         if (!result.success) {
-            return res.status(500).json({ message: 'Failed to send OTP email' });
+            console.error('OTP Email failed:', result.error);
+            return res.status(500).json({
+                message: 'Failed to send OTP email',
+                error: result.error
+            });
         }
 
         res.json({ message: 'OTP sent successfully' });
