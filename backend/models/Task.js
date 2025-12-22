@@ -11,11 +11,10 @@ const taskSchema = new mongoose.Schema({
         ref: 'Event',
         required: true
     },
-    assignedTo: {
+    assignedTo: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        default: null
-    },
+        ref: 'User'
+    }],
     status: {
         type: String,
         enum: ['pending', 'in-progress', 'completed'],
@@ -26,3 +25,4 @@ const taskSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Task', taskSchema);
+

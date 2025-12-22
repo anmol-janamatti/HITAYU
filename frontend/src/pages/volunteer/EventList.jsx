@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import { UPLOADS_URL } from '../../config';
 
 const EventList = () => {
     const [events, setEvents] = useState([]);
@@ -64,38 +65,52 @@ const EventList = () => {
                     {events.map((event) => (
                         <div
                             key={event._id}
-                            className="bg-white p-6 rounded-lg shadow"
+                            className="bg-white rounded-lg shadow overflow-hidden"
                         >
-                            <h2 className="text-lg font-semibold text-gray-800 mb-2">{event.title}</h2>
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{event.description}</p>
-                            <div className="text-sm text-gray-500 space-y-1 mb-4">
-                                <p>📅 {new Date(event.date).toLocaleDateString()}</p>
-                                <p>📍 {event.location}</p>
-                                <p>👥 {event.volunteers?.length || 0} / {event.maxVolunteers} volunteers</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <Link
-                                    to={`/volunteer/events/${event._id}`}
-                                    className="flex-1 text-center bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 text-sm"
-                                >
-                                    View Details
-                                </Link>
-                                {isJoined(event) ? (
-                                    <span className="flex-1 text-center bg-green-100 text-green-700 px-4 py-2 rounded text-sm">
-                                        ✓ Joined
-                                    </span>
-                                ) : isFull(event) ? (
-                                    <span className="flex-1 text-center bg-gray-100 text-gray-500 px-4 py-2 rounded text-sm">
-                                        Full
-                                    </span>
-                                ) : (
-                                    <button
-                                        onClick={() => handleJoin(event._id)}
-                                        className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                            {/* Event Cover Photo */}
+                            {event.photos && event.photos.length > 0 ? (
+                                <img
+                                    src={`${UPLOADS_URL}/events/${event.photos[0]}`}
+                                    alt={event.title}
+                                    className="w-full h-40 object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-40 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                                    <span className="text-white text-4xl">📅</span>
+                                </div>
+                            )}
+                            <div className="p-6">
+                                <h2 className="text-lg font-semibold text-gray-800 mb-2">{event.title}</h2>
+                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{event.description}</p>
+                                <div className="text-sm text-gray-500 space-y-1 mb-4">
+                                    <p>📅 {new Date(event.date).toLocaleDateString()}</p>
+                                    <p>📍 {event.location}</p>
+                                    <p>👥 {event.volunteers?.length || 0} / {event.maxVolunteers} volunteers</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Link
+                                        to={`/volunteer/events/${event._id}`}
+                                        className="flex-1 text-center bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 text-sm"
                                     >
-                                        Join
-                                    </button>
-                                )}
+                                        View Details
+                                    </Link>
+                                    {isJoined(event) ? (
+                                        <span className="flex-1 text-center bg-green-100 text-green-700 px-4 py-2 rounded text-sm">
+                                            ✓ Joined
+                                        </span>
+                                    ) : isFull(event) ? (
+                                        <span className="flex-1 text-center bg-gray-100 text-gray-500 px-4 py-2 rounded text-sm">
+                                            Full
+                                        </span>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleJoin(event._id)}
+                                            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                                        >
+                                            Join
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

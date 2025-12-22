@@ -8,10 +8,32 @@ const CreateEvent = () => {
     const [date, setDate] = useState('');
     const [location, setLocation] = useState('');
     const [maxVolunteers, setMaxVolunteers] = useState('');
+    const [photos, setPhotos] = useState([]);
+    const [previews, setPreviews] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
+
+    const handlePhotoChange = (e) => {
+        const files = Array.from(e.target.files);
+        setPhotos(files);
+
+        // Create preview URLs
+        const previewUrls = files.map(file => URL.createObjectURL(file));
+        setPreviews(previewUrls);
+    };
+
+    const removePhoto = (index) => {
+        const newPhotos = photos.filter((_, i) => i !== index);
+        const newPreviews = previews.filter((_, i) => i !== index);
+
+        // Revoke old URL to prevent memory leak
+        URL.revokeObjectURL(previews[index]);
+
+        setPhotos(newPhotos);
+        setPreviews(newPreviews);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,13 +41,28 @@ const CreateEvent = () => {
         setLoading(true);
 
         try {
-            await api.post('/events', {
-                title,
-                description,
-                date,
-                location,
-                maxVolunteers: parseInt(maxVolunteers)
+            // Use FormData for file uploads
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('date', date);
+            formData.append('location', location);
+            formData.append('maxVolunteers', maxVolunteers);
+
+            // Append photos
+            photos.forEach(photo => {
+                formData.append('photos', photo);
             });
+
+            await api.post('/events', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            // Cleanup preview URLs
+            previews.forEach(url => URL.revokeObjectURL(url));
+
             navigate('/admin');
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create event');
@@ -97,7 +134,7 @@ const CreateEvent = () => {
                     />
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-4">
                     <label className="block text-gray-700 text-sm font-medium mb-2">
                         Max Volunteers
                     </label>
@@ -109,6 +146,47 @@ const CreateEvent = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                     />
+                </div>
+
+                {/* Photo Upload Section */}
+                <div className="mb-6">
+                    <label className="block text-gray-700 text-sm font-medium mb-2">
+                        Event Photos (Optional)
+                    </label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-400 transition-colors">
+                        <input
+                            type="file"
+                            multiple
+                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                            onChange={handlePhotoChange}
+                            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        <p className="text-xs text-gray-400 mt-2">
+                            Max 10 photos, 5MB each. Accepted: JPG, PNG, GIF, WebP
+                        </p>
+                    </div>
+
+                    {/* Photo Previews */}
+                    {previews.length > 0 && (
+                        <div className="mt-4 grid grid-cols-3 gap-3">
+                            {previews.map((preview, index) => (
+                                <div key={index} className="relative group">
+                                    <img
+                                        src={preview}
+                                        alt={`Preview ${index + 1}`}
+                                        className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removePhoto(index)}
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex gap-4">

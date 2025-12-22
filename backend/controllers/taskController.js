@@ -14,26 +14,32 @@ const createTask = async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // If assignedTo is provided, verify volunteer is in the event
+        // Handle assignedTo as array or single value
+        let volunteerIds = [];
         if (assignedTo) {
-            const volunteerInEvent = event.volunteers.some(
-                v => v.toString() === assignedTo
-            );
-            if (!volunteerInEvent) {
-                return res.status(400).json({ message: 'Volunteer is not part of this event' });
+            volunteerIds = Array.isArray(assignedTo) ? assignedTo : [assignedTo];
+
+            // Verify all volunteers are in the event
+            for (const volunteerId of volunteerIds) {
+                const volunteerInEvent = event.volunteers.some(
+                    v => v.toString() === volunteerId
+                );
+                if (!volunteerInEvent) {
+                    return res.status(400).json({ message: `Volunteer ${volunteerId} is not part of this event` });
+                }
             }
         }
 
         const task = await Task.create({
             title,
             eventId,
-            assignedTo: assignedTo || null,
+            assignedTo: volunteerIds,
             status: 'pending'
         });
 
         const populatedTask = await Task.findById(task._id)
             .populate('eventId', 'title')
-            .populate('assignedTo', 'name email');
+            .populate('assignedTo', 'username email');
 
         res.status(201).json(populatedTask);
     } catch (error) {
@@ -41,34 +47,37 @@ const createTask = async (req, res) => {
     }
 };
 
-// @desc    Assign task to volunteer
+// @desc    Assign task to volunteers
 // @route   PUT /api/tasks/:id/assign
 // @access  Private/Admin
 const assignTask = async (req, res) => {
     try {
-        const { volunteerId } = req.body;
+        const { volunteerIds } = req.body;
         const task = await Task.findById(req.params.id);
 
         if (!task) {
             return res.status(404).json({ message: 'Task not found' });
         }
 
-        // Verify volunteer is in the event
+        // Verify event and volunteers
         const event = await Event.findById(task.eventId);
-        const volunteerInEvent = event.volunteers.some(
-            v => v.toString() === volunteerId
-        );
+        const ids = Array.isArray(volunteerIds) ? volunteerIds : [volunteerIds];
 
-        if (!volunteerInEvent) {
-            return res.status(400).json({ message: 'Volunteer is not part of this event' });
+        for (const volunteerId of ids) {
+            const volunteerInEvent = event.volunteers.some(
+                v => v.toString() === volunteerId
+            );
+            if (!volunteerInEvent) {
+                return res.status(400).json({ message: 'Volunteer is not part of this event' });
+            }
         }
 
-        task.assignedTo = volunteerId;
+        task.assignedTo = ids;
         await task.save();
 
         const updatedTask = await Task.findById(task._id)
             .populate('eventId', 'title')
-            .populate('assignedTo', 'name email');
+            .populate('assignedTo', 'username email');
 
         res.json(updatedTask);
     } catch (error) {
@@ -104,7 +113,10 @@ const updateTaskStatus = async (req, res) => {
         }
 
         // Verify the volunteer is assigned to this task
-        if (!task.assignedTo || task.assignedTo.toString() !== req.user._id.toString()) {
+        const isAssigned = task.assignedTo.some(
+            id => id.toString() === req.user._id.toString()
+        );
+        if (!isAssigned) {
             return res.status(403).json({ message: 'You are not assigned to this task' });
         }
 
@@ -118,7 +130,7 @@ const updateTaskStatus = async (req, res) => {
 
         const updatedTask = await Task.findById(task._id)
             .populate('eventId', 'title date location')
-            .populate('assignedTo', 'name email');
+            .populate('assignedTo', 'username email');
 
         res.json(updatedTask);
     } catch (error) {
@@ -132,7 +144,7 @@ const updateTaskStatus = async (req, res) => {
 const getTasksByEvent = async (req, res) => {
     try {
         const tasks = await Task.find({ eventId: req.params.eventId })
-            .populate('assignedTo', 'name email')
+            .populate('assignedTo', 'username email')
             .sort({ createdAt: -1 });
 
         res.json(tasks);
@@ -142,3 +154,4 @@ const getTasksByEvent = async (req, res) => {
 };
 
 module.exports = { createTask, assignTask, getMyTasks, updateTaskStatus, getTasksByEvent };
+

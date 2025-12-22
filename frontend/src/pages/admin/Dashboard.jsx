@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
+import { UPLOADS_URL } from '../../config';
 
 const Dashboard = () => {
     const [events, setEvents] = useState([]);
@@ -57,14 +58,28 @@ const Dashboard = () => {
                         <Link
                             key={event._id}
                             to={`/admin/events/${event._id}`}
-                            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+                            className="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden"
                         >
-                            <h2 className="text-lg font-semibold text-gray-800 mb-2">{event.title}</h2>
-                            <p className="text-gray-600 text-sm mb-2 line-clamp-2">{event.description}</p>
-                            <div className="text-sm text-gray-500 space-y-1">
-                                <p>📅 {new Date(event.date).toLocaleDateString()}</p>
-                                <p>📍 {event.location}</p>
-                                <p>👥 {event.volunteers?.length || 0} / {event.maxVolunteers} volunteers</p>
+                            {/* Event Cover Photo */}
+                            {event.photos && event.photos.length > 0 ? (
+                                <img
+                                    src={`${UPLOADS_URL}/events/${event.photos[0]}`}
+                                    alt={event.title}
+                                    className="w-full h-40 object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-40 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                                    <span className="text-white text-4xl">📅</span>
+                                </div>
+                            )}
+                            <div className="p-4">
+                                <h2 className="text-lg font-semibold text-gray-800 mb-2">{event.title}</h2>
+                                <p className="text-gray-600 text-sm mb-2 line-clamp-2">{event.description}</p>
+                                <div className="text-sm text-gray-500 space-y-1">
+                                    <p>📅 {new Date(event.date).toLocaleDateString()}</p>
+                                    <p>📍 {event.location}</p>
+                                    <p>👥 {event.volunteers?.length || 0} / {event.maxVolunteers} volunteers</p>
+                                </div>
                             </div>
                         </Link>
                     ))}
@@ -75,3 +90,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

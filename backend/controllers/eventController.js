@@ -7,6 +7,9 @@ const createEvent = async (req, res) => {
     try {
         const { title, description, date, location, maxVolunteers } = req.body;
 
+        // Get photo filenames from uploaded files
+        const photos = req.files ? req.files.map(file => file.filename) : [];
+
         const event = await Event.create({
             title,
             description,
@@ -14,10 +17,81 @@ const createEvent = async (req, res) => {
             location,
             maxVolunteers,
             createdBy: req.user._id,
-            volunteers: []
+            volunteers: [],
+            photos
         });
 
         res.status(201).json(event);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// @desc    Update event
+// @route   PUT /api/events/:id
+// @access  Private/Admin
+const updateEvent = async (req, res) => {
+    try {
+        const { title, description, date, location, maxVolunteers } = req.body;
+
+        const event = await Event.findById(req.params.id);
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        // Verify admin owns this event
+        if (event.createdBy.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to update this event' });
+        }
+
+        // Update fields
+        if (title) event.title = title;
+        if (description) event.description = description;
+        if (date) event.date = date;
+        if (location) event.location = location;
+        if (maxVolunteers) event.maxVolunteers = maxVolunteers;
+
+        await event.save();
+
+        const updatedEvent = await Event.findById(req.params.id)
+            .populate('createdBy', 'username email')
+            .populate('volunteers', 'username email');
+
+        res.json(updatedEvent);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// @desc    Remove volunteer from event
+// @route   DELETE /api/events/:id/volunteers/:volunteerId
+// @access  Private/Admin
+const removeVolunteer = async (req, res) => {
+    try {
+        const event = await Event.findById(req.params.id);
+
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        // Verify admin owns this event
+        if (event.createdBy.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        // Remove volunteer
+        event.volunteers = event.volunteers.filter(
+            v => v.toString() !== req.params.volunteerId
+        );
+
+        await event.save();
+
+        const updatedEvent = await Event.findById(req.params.id)
+            .populate('createdBy', 'username email')
+            .populate('volunteers', 'username email');
+
+        res.json(updatedEvent);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
@@ -29,8 +103,8 @@ const createEvent = async (req, res) => {
 const getAllEvents = async (req, res) => {
     try {
         const events = await Event.find()
-            .populate('createdBy', 'name email')
-            .populate('volunteers', 'name email')
+            .populate('createdBy', 'username email')
+            .populate('volunteers', 'username email')
             .sort({ date: 1 });
 
         res.json(events);
@@ -45,8 +119,8 @@ const getAllEvents = async (req, res) => {
 const getEventById = async (req, res) => {
     try {
         const event = await Event.findById(req.params.id)
-            .populate('createdBy', 'name email')
-            .populate('volunteers', 'name email');
+            .populate('createdBy', 'username email')
+            .populate('volunteers', 'username email');
 
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
@@ -83,8 +157,8 @@ const joinEvent = async (req, res) => {
         await event.save();
 
         const updatedEvent = await Event.findById(req.params.id)
-            .populate('createdBy', 'name email')
-            .populate('volunteers', 'name email');
+            .populate('createdBy', 'username email')
+            .populate('volunteers', 'username email');
 
         res.json(updatedEvent);
     } catch (error) {
@@ -98,7 +172,7 @@ const joinEvent = async (req, res) => {
 const getMyEvents = async (req, res) => {
     try {
         const events = await Event.find({ createdBy: req.user._id })
-            .populate('volunteers', 'name email')
+            .populate('volunteers', 'username email')
             .sort({ date: 1 });
 
         res.json(events);
@@ -107,4 +181,5 @@ const getMyEvents = async (req, res) => {
     }
 };
 
-module.exports = { createEvent, getAllEvents, getEventById, joinEvent, getMyEvents };
+module.exports = { createEvent, updateEvent, removeVolunteer, getAllEvents, getEventById, joinEvent, getMyEvents };
+

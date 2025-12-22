@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
+import EventChat from '../../components/EventChat';
+import { UPLOADS_URL } from '../../config';
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -64,22 +66,22 @@ const EventDetails = () => {
                 ← Back to Events
             </Link>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex justify-between items-start mb-4">
-                    <h1 className="text-2xl font-bold text-gray-800">{event.title}</h1>
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">{event.title}</h1>
                     {isJoined() ? (
-                        <span className="bg-green-100 text-green-700 px-4 py-2 rounded text-sm font-medium">
+                        <span className="bg-green-100 text-green-700 px-4 py-2 rounded text-sm font-medium text-center">
                             ✓ You've Joined
                         </span>
                     ) : isFull() ? (
-                        <span className="bg-gray-100 text-gray-500 px-4 py-2 rounded text-sm font-medium">
+                        <span className="bg-gray-100 text-gray-500 px-4 py-2 rounded text-sm font-medium text-center">
                             Event Full
                         </span>
                     ) : (
                         <button
                             onClick={handleJoin}
                             disabled={joining}
-                            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 w-full sm:w-auto"
                         >
                             {joining ? 'Joining...' : 'Join Event'}
                         </button>
@@ -115,8 +117,34 @@ const EventDetails = () => {
                     </div>
                 )}
             </div>
+
+            {/* Event Photos Section */}
+            {event.photos && event.photos.length > 0 && (
+                <div className="bg-white p-6 rounded-lg shadow mb-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Event Photos</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {event.photos.map((photo, index) => (
+                            <img
+                                key={index}
+                                src={`${UPLOADS_URL}/events/${photo}`}
+                                alt={`Event photo ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border border-gray-200 hover:opacity-90 transition-opacity cursor-pointer"
+                                onClick={() => window.open(`${UPLOADS_URL}/events/${photo}`, '_blank')}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Event Chat - only show if joined */}
+            {isJoined() && (
+                <div className="mb-6">
+                    <EventChat eventId={id} />
+                </div>
+            )}
         </div>
     );
 };
 
 export default EventDetails;
+

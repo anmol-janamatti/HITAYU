@@ -1,9 +1,12 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import SelectRole from './pages/SelectRole';
+import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/Dashboard';
 import CreateEvent from './pages/admin/CreateEvent';
 import AdminEventDetails from './pages/admin/EventDetails';
@@ -13,6 +16,7 @@ import MyTasks from './pages/volunteer/MyTasks';
 
 function App() {
     const { user, loading } = useAuth();
+    const location = useLocation();
 
     if (loading) {
         return (
@@ -22,10 +26,24 @@ function App() {
         );
     }
 
+    // Hide navbar on landing, login, register pages for cleaner look
+    const publicPages = ['/', '/login', '/register', '/select-role'];
+    const showNavbar = user && !publicPages.includes(location.pathname);
+
     return (
-        <div className="min-h-screen bg-gray-100">
-            <Navbar />
+        <div className={`min-h-screen ${showNavbar ? 'bg-gray-100' : ''}`}>
+            {showNavbar && <Navbar />}
             <Routes>
+                {/* Landing Page */}
+                <Route
+                    path="/"
+                    element={
+                        user
+                            ? <Navigate to={user.role === 'admin' ? '/admin' : '/volunteer'} />
+                            : <Landing />
+                    }
+                />
+
                 {/* Public Routes */}
                 <Route
                     path="/login"
@@ -35,6 +53,7 @@ function App() {
                     path="/register"
                     element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/volunteer'} /> : <Register />}
                 />
+                <Route path="/select-role" element={<SelectRole />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={
@@ -70,12 +89,14 @@ function App() {
                     </ProtectedRoute>
                 } />
 
-                {/* Default Redirect */}
-                <Route path="/" element={
-                    user
-                        ? <Navigate to={user.role === 'admin' ? '/admin' : '/volunteer'} />
-                        : <Navigate to="/login" />
+                {/* Profile Route - accessible by all authenticated users */}
+                <Route path="/profile" element={
+                    <ProtectedRoute allowedRoles={['admin', 'volunteer']}>
+                        <Profile />
+                    </ProtectedRoute>
                 } />
+
+                {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </div>
@@ -83,3 +104,5 @@ function App() {
 }
 
 export default App;
+
+

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
@@ -8,7 +9,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -21,6 +22,24 @@ const Login = () => {
             navigate(user.role === 'admin' ? '/admin' : '/volunteer');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        setError('');
+        setLoading(true);
+
+        try {
+            const result = await googleLogin(credentialResponse.credential);
+            if (result.needsRole) {
+                navigate('/select-role');
+            } else {
+                navigate(result.role === 'admin' ? '/admin' : '/volunteer');
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Google login failed');
         } finally {
             setLoading(false);
         }
@@ -73,6 +92,22 @@ const Login = () => {
                     </button>
                 </form>
 
+                <div className="my-4 flex items-center">
+                    <div className="flex-1 border-t border-gray-300"></div>
+                    <span className="px-4 text-gray-500 text-sm">or</span>
+                    <div className="flex-1 border-t border-gray-300"></div>
+                </div>
+
+                <div className="flex justify-center">
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={() => setError('Google login failed')}
+                        theme="outline"
+                        size="large"
+                        width="100%"
+                    />
+                </div>
+
                 <p className="mt-4 text-center text-gray-600">
                     Don't have an account?{' '}
                     <Link to="/register" className="text-blue-600 hover:underline">
@@ -85,3 +120,4 @@ const Login = () => {
 };
 
 export default Login;
+
