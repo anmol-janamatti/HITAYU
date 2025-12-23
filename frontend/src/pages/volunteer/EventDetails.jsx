@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import EventChat from '../../components/EventChat';
-import { UPLOADS_URL } from '../../config';
+import { getImageUrl } from '../../config';
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -101,7 +101,7 @@ const EventDetails = () => {
                     </div>
                     <div>
                         <span className="font-medium block text-gray-700">Organized By</span>
-                        {event.createdBy?.name || 'Admin'}
+                        {event.createdBy?.username || 'Admin'}
                     </div>
                     <div>
                         <span className="font-medium block text-gray-700">Volunteers</span>
@@ -126,10 +126,10 @@ const EventDetails = () => {
                         {event.photos.map((photo, index) => (
                             <img
                                 key={index}
-                                src={`${UPLOADS_URL}/events/${photo}`}
+                                src={getImageUrl(photo)}
                                 alt={`Event photo ${index + 1}`}
                                 className="w-full h-32 object-cover rounded-lg border border-gray-200 hover:opacity-90 transition-opacity cursor-pointer"
-                                onClick={() => window.open(`${UPLOADS_URL}/events/${photo}`, '_blank')}
+                                onClick={() => window.open(getImageUrl(photo), '_blank')}
                             />
                         ))}
                     </div>

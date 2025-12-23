@@ -36,7 +36,7 @@ io.use(async (socket, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.userId).select('-password');
+        const user = await User.findById(decoded.userId);
 
         if (!user) {
             return next(new Error('User not found'));
@@ -115,11 +115,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Serve uploaded files statically
-const uploadsPath = process.env.NODE_ENV === 'production'
-    ? '/var/data/uploads'
-    : path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(uploadsPath));
+// Note: Images are now served from Cloudinary CDN, no local static serving needed
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -127,7 +123,6 @@ app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/events', require('./routes/messageRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 app.use('/api/profile', require('./routes/profileRoutes'));
-app.use('/api/otp', require('./routes/otpRoutes'));
 
 // Health check route
 app.get('/', (req, res) => {

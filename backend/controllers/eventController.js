@@ -7,8 +7,8 @@ const createEvent = async (req, res) => {
     try {
         const { title, description, date, location, maxVolunteers } = req.body;
 
-        // Get photo filenames from uploaded files
-        const photos = req.files ? req.files.map(file => file.filename) : [];
+        // Get photo URLs from uploaded files (Cloudinary URLs)
+        const photos = req.files ? req.files.map(file => file.path) : [];
 
         const event = await Event.create({
             title,

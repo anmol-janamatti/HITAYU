@@ -12,10 +12,17 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         );
     }
 
+    // Not logged in
     if (!user) {
         return <Navigate to="/login" replace />;
     }
 
+    // Profile not complete - redirect to complete profile
+    if (!user.profileComplete) {
+        return <Navigate to="/complete-profile" replace />;
+    }
+
+    // Check role authorization
     if (allowedRoles && !allowedRoles.includes(user.role)) {
         return <Navigate to={user.role === 'admin' ? '/admin' : '/volunteer'} replace />;
     }

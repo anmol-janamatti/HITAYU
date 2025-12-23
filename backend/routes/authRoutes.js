@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, googleAuth, updateRole, getMe } = require('../controllers/authController');
+const { googleAuth, completeProfile, getMe } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
-router.post('/register', register);
-router.post('/login', login);
+// Google OAuth - login/signup
 router.post('/google', googleAuth);
-router.put('/role', updateRole);
+
+// Complete profile (for new users)
+router.put('/complete-profile', auth, completeProfile);
+
+// Get current user
 router.get('/me', auth, getMe);
 
 module.exports = router;
-

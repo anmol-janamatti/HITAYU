@@ -5,7 +5,7 @@ const User = require('../models/User');
 // @access  Private
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('-password');
+        const user = await User.findById(req.user._id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -41,9 +41,9 @@ const updateProfile = async (req, res) => {
             if (position !== undefined) user.position = position;
         }
 
-        // Handle avatar if uploaded
+        // Handle avatar if uploaded (Cloudinary URL)
         if (req.file) {
-            user.avatar = req.file.filename;
+            user.avatar = req.file.path;
         }
 
         await user.save();

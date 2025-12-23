@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
-import { UPLOADS_URL } from '../config';
+import { getImageUrl } from '../config';
 
 // Custom hook for scroll animation
 const useScrollAnimation = () => {
@@ -135,7 +135,7 @@ const Landing = () => {
                             Login
                         </Link>
                         <Link
-                            to="/register"
+                            to="/login"
                             className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all hover:scale-105"
                             style={{ backgroundColor: theme.btnPrimary, color: theme.btnPrimaryText }}
                         >
@@ -164,7 +164,7 @@ const Landing = () => {
                     <FadeInUp delay={0.2}>
                         <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
                             <Link
-                                to="/register"
+                                to="/login"
                                 className="px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 hover:shadow-lg"
                                 style={{ backgroundColor: theme.btnPrimary, color: theme.btnPrimaryText }}
                             >
@@ -206,7 +206,7 @@ const Landing = () => {
                                 <p className="text-sm leading-relaxed" style={{ color: theme.textSecondary }}>
                                     {card.desc}
                                 </p>
-                                <Link to="/register" className="inline-block mt-4 text-sm font-medium hover:underline" style={{ color: theme.text }}>
+                                <Link to="/login" className="inline-block mt-4 text-sm font-medium hover:underline" style={{ color: theme.text }}>
                                     Get Started →
                                 </Link>
                             </div>
@@ -245,7 +245,7 @@ const Landing = () => {
                                 </div>
                                 <p className="mb-4" style={{ color: theme.textSecondary }}>No events yet. Be the first to create one!</p>
                                 <Link
-                                    to="/register"
+                                    to="/login"
                                     className="inline-flex px-5 py-2.5 rounded-lg text-sm font-medium transition-all hover:scale-105"
                                     style={{ backgroundColor: theme.btnPrimary, color: theme.btnPrimaryText }}
                                 >
@@ -263,7 +263,7 @@ const Landing = () => {
                                     >
                                         {event.photos && event.photos.length > 0 ? (
                                             <img
-                                                src={`${UPLOADS_URL}/events/${event.photos[0]}`}
+                                                src={getImageUrl(event.photos[0])}
                                                 alt={event.title}
                                                 className="w-full h-40 object-cover"
                                             />
@@ -323,7 +323,7 @@ const Landing = () => {
                             making coordination effortless and impact measurable.
                         </p>
                         <Link
-                            to="/register"
+                            to="/login"
                             className="inline-flex px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 hover:shadow-lg"
                             style={{ backgroundColor: theme.btnPrimary, color: theme.btnPrimaryText }}
                         >
@@ -341,7 +341,7 @@ const Landing = () => {
                             The smarter and simpler way to coordinate.
                         </h2>
                         <Link
-                            to="/register"
+                            to="/login"
                             className="inline-flex px-6 py-3 rounded-lg font-medium transition-all hover:scale-105"
                             style={{ backgroundColor: theme.bg, color: theme.text }}
                         >
@@ -360,7 +360,7 @@ const Landing = () => {
                     <div className="font-semibold" style={{ color: theme.text }}>Hitayu</div>
                     <div className="flex gap-6 text-sm" style={{ color: theme.textSecondary }}>
                         <Link to="/login" className="hover:underline">Login</Link>
-                        <Link to="/register" className="hover:underline">Register</Link>
+                        <Link to="/login" className="hover:underline">Register</Link>
                     </div>
                     <p className="text-sm" style={{ color: theme.textMuted }}>
                         © 2024 Hitayu

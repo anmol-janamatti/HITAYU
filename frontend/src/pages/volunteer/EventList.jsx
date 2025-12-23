@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { UPLOADS_URL } from '../../config';
+import { getImageUrl } from '../../config';
 
 const EventList = () => {
     const [events, setEvents] = useState([]);
@@ -70,7 +70,7 @@ const EventList = () => {
                             {/* Event Cover Photo */}
                             {event.photos && event.photos.length > 0 ? (
                                 <img
-                                    src={`${UPLOADS_URL}/events/${event.photos[0]}`}
+                                    src={getImageUrl(event.photos[0])}
                                     alt={event.title}
                                     className="w-full h-40 object-cover"
                                 />

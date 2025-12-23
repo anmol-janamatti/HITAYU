@@ -4,8 +4,7 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
-import Register from './pages/Register';
-import SelectRole from './pages/SelectRole';
+import CompleteProfile from './pages/CompleteProfile';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/admin/Dashboard';
 import CreateEvent from './pages/admin/CreateEvent';
@@ -26,9 +25,16 @@ function App() {
         );
     }
 
-    // Hide navbar on landing, login, register pages for cleaner look
-    const publicPages = ['/', '/login', '/register', '/select-role'];
-    const showNavbar = user && !publicPages.includes(location.pathname);
+    // Helper to get redirect path for logged-in users
+    const getRedirectPath = () => {
+        if (!user) return '/login';
+        if (!user.profileComplete) return '/complete-profile';
+        return user.role === 'admin' ? '/admin' : '/volunteer';
+    };
+
+    // Hide navbar on public/auth pages
+    const publicPages = ['/', '/login', '/complete-profile'];
+    const showNavbar = user && user.profileComplete && !publicPages.includes(location.pathname);
 
     return (
         <div className={`min-h-screen ${showNavbar ? 'bg-gray-100' : ''}`}>
@@ -38,22 +44,22 @@ function App() {
                 <Route
                     path="/"
                     element={
-                        user
-                            ? <Navigate to={user.role === 'admin' ? '/admin' : '/volunteer'} />
+                        user && user.profileComplete
+                            ? <Navigate to={getRedirectPath()} />
                             : <Landing />
                     }
                 />
 
-                {/* Public Routes */}
+                {/* Auth Routes */}
                 <Route
                     path="/login"
-                    element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/volunteer'} /> : <Login />}
+                    element={
+                        user && user.profileComplete
+                            ? <Navigate to={getRedirectPath()} />
+                            : <Login />
+                    }
                 />
-                <Route
-                    path="/register"
-                    element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/volunteer'} /> : <Register />}
-                />
-                <Route path="/select-role" element={<SelectRole />} />
+                <Route path="/complete-profile" element={<CompleteProfile />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={
@@ -104,5 +110,3 @@ function App() {
 }
 
 export default App;
-
-

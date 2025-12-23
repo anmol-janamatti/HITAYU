@@ -18,7 +18,9 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
-    disk:
-      name: uploads
-      mountPath: /var/data/uploads
-      sizeGB: 1
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

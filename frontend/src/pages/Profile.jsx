@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import { UPLOADS_URL } from '../config';
+import { getImageUrl } from '../config';
 
 const Profile = () => {
     const { user } = useAuth();
@@ -40,7 +40,6 @@ const Profile = () => {
         setError('');
         try {
             const updateData = {
-                name: formData.name,
                 phone: formData.phone,
                 bio: formData.bio,
                 location: formData.location
@@ -108,7 +107,7 @@ const Profile = () => {
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white text-3xl font-bold shadow-lg">
                         {profile?.avatar ? (
                             <img
-                                src={`${UPLOADS_URL}/events/${profile.avatar}`}
+                                src={getImageUrl(profile.avatar)}
                                 alt="Avatar"
                                 className="w-full h-full rounded-full object-cover"
                             />

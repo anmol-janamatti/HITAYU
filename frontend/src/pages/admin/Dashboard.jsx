@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
-import { UPLOADS_URL } from '../../config';
+import { getImageUrl } from '../../config';
 
 const Dashboard = () => {
     const [events, setEvents] = useState([]);
@@ -63,7 +63,7 @@ const Dashboard = () => {
                             {/* Event Cover Photo */}
                             {event.photos && event.photos.length > 0 ? (
                                 <img
-                                    src={`${UPLOADS_URL}/events/${event.photos[0]}`}
+                                    src={getImageUrl(event.photos[0])}
                                     alt={event.title}
                                     className="w-full h-40 object-cover"
                                 />
